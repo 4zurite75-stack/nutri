@@ -17,6 +17,7 @@ import { confirm, showActions, toast } from '../../ui/uiStore';
 import { PromptSheet } from '../../ui/PromptSheet';
 import { CheckInCard } from '../progreso/CheckInCard';
 import { useAnalysis } from '../progreso/useAnalysis';
+import { CatCard } from '../gato/CatCard';
 
 const WEEK = 7 * 86400000;
 
@@ -184,7 +185,17 @@ export function HoyHome() {
           </section>
         )}
 
-        {checkInDue && analysis && <CheckInCard a={analysis} />}
+        {isToday && (
+          <div className="hoy__cards" style={{ paddingTop: 12 }}>
+            <CatCard />
+          </div>
+        )}
+
+        {checkInDue && analysis && (
+          <div className="hoy__cards">
+            <CheckInCard a={analysis} />
+          </div>
+        )}
 
         {s.meals.map((m) => (
           <MealSection key={m.id} meal={m} entries={byMeal(m.id)} onAdd={() => setPicker(m.id)} onEdit={(e) => void openEdit(e)} onMenu={() => mealMenu(m.id)} />

@@ -6,6 +6,7 @@ import './styles/base.css';
 import './styles/components.css';
 import './styles/reuse.css';
 import './styles/app.css';
+import './styles/cat.css';
 
 // Para pruebas en navegador de escritorio: simula notch y barra inferior de iPhone.
 if (new URLSearchParams(location.search).has('sim')) document.documentElement.classList.add('sim-iphone');
