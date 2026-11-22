@@ -1,0 +1,317 @@
+:root {
+  --bg: #000;
+  --surface: #121214;
+  --surface-2: #1c1c1f;
+  --surface-3: #2a2a2e;
+  --surface-4: #38383d;
+  --sep: rgba(255, 255, 255, 0.09);
+  --text: #f5f5f7;
+  --text-2: #9a9aa1;
+  --text-3: #5f5f66;
+  --accent: #30d158;
+  --accent-press: #28b14b;
+  --accent-tint: rgba(48, 209, 88, 0.15);
+  --accent-rgb: 48, 209, 88;
+  --on-accent: #04210d;
+  --green: #30d158;
+  --green-tint: rgba(48, 209, 88, 0.14);
+  --red: #ff453a;
+  --red-tint: rgba(255, 69, 58, 0.14);
+  --blue: #0a84ff;
+  --yellow: #ffd60a;
+  --purple: #bf5af2;
+  --c-protein: #3a86ec;
+  --c-carbs: #c98400;
+  --c-fat: #e2457a;
+  --c-water: #3fa9f5;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --tabbar-h: 50px;
+  --nav-h: 44px;
+  --minibar-h: 0px;
+  --gutter: 16px;
+  --radius: 14px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Simulación de iPhone 15/16 Pro para pruebas en escritorio (?sim) */
+:root.sim-iphone {
+  --safe-top: 59px;
+  --safe-bottom: 34px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: default;
+}
+
+input,
+textarea {
+  font: inherit;
+  font-size: 16px; /* evita el zoom de iOS al enfocar */
+  color: inherit;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+/* ---------- Estructura ---------- */
+.app {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.app.has-minibar {
+  --minibar-h: 56px;
+}
+
+.tabviews {
+  position: absolute;
+  inset: 0;
+}
+
+.tabview {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tabview.is-active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.stack-screen {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  overflow: hidden;
+  transition: transform 0.42s var(--ease-ios), filter 0.42s var(--ease-ios);
+}
+.stack-screen.is-pushed {
+  animation: push-in 0.42s var(--ease-ios) both;
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.5);
+}
+.stack-screen.is-leaving {
+  animation: push-out 0.3s var(--ease-ios) both;
+  pointer-events: none;
+}
+.stack-screen.is-covered {
+  transform: translateX(-28%);
+  filter: brightness(0.55);
+  pointer-events: none;
+}
+@keyframes push-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes push-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- Página y barra de navegación ---------- */
+.page {
+  position: absolute;
+  inset: 0;
+}
+
+.page__scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(var(--safe-top) + var(--nav-h)) 0 calc(var(--tabbar-h) + var(--safe-bottom) + var(--minibar-h) + 32px);
+}
+.page__scroll.has-sub {
+  padding-top: calc(var(--safe-top) + var(--nav-h) + 98px);
+}
+
+.navbar {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: var(--safe-top);
+  transition: background-color 0.2s, border-color 0.2s;
+  border-bottom: 0.5px solid transparent;
+}
+.navbar.is-scrolled,
+.navbar:has(.navbar__sub) {
+  background: rgba(14, 14, 16, 0.78);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom-color: var(--sep);
+}
+.navbar__row {
+  height: var(--nav-h);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 8px;
+}
+.navbar__side {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.navbar__side--right {
+  justify-content: flex-end;
+  gap: 4px;
+}
+.navbar__title {
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 58vw;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.navbar__title.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.navbar__back {
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-size: 17px;
+  height: 44px;
+  margin-left: -6px;
+  white-space: nowrap;
+}
+.navbar__back:active {
+  opacity: 0.5;
+}
+.navbar__sub {
+  padding: 2px var(--gutter) 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.large-title {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  padding: 4px var(--gutter) 12px;
+}
+
+/* ---------- Barra de pestañas ---------- */
+.tabbar {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: rgba(16, 16, 18, 0.82);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  backdrop-filter: saturate(180%) blur(22px);
+  border-top: 0.5px solid var(--sep);
+}
+.tabbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.15s;
+}
+.tabbar__item.is-active {
+  color: var(--accent);
+}
+.tabbar__item:active svg {
+  transform: scale(0.9);
+}
+.tabbar__item svg {
+  transition: transform 0.12s;
+}
+
+.edge-swipe {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  top: calc(var(--safe-top) + var(--nav-h));
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+  width: 18px;
+  touch-action: none;
+}
