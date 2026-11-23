@@ -9,12 +9,13 @@ import { setLabel, repsText, loadText, setHowTo, platesText } from './labels';
 import { BigNumber } from './BigNumber';
 import { nextPending, progress } from './cursor';
 import { useNow } from './useNow';
-import { unlockAudio } from '../../lib/sound';
+import { armAlarm } from '../../lib/alarm';
 import { setKeepAwake } from '../../lib/wakeLock';
 import { ask, toast } from '../../ui/uiStore';
 import { fmtKg } from '../../lib/format';
 import { OverviewSheet } from './OverviewSheet';
 import { FinishView } from './FinishView';
+import { NoteBox, PastNotes } from './notes';
 
 const clock = (sec: number) => {
   const s = Math.max(0, Math.round(sec));
@@ -80,7 +81,7 @@ function SetView({ session, cfg }: { session: GymSession; cfg: ProgramConfig }) 
   const total = session.exercises.length;
 
   const complete = () => {
-    unlockAudio();
+    armAlarm();
     const askW = s.ask.weight || otherWeight;
     if (askW && weight == null) return toast(e.bodyweight ? 'Escribe el lastre (0 si es sin lastre)' : 'Escribe el peso que has usado');
     if (s.ask.reps && (reps == null || reps < 0)) return toast('Escribe las repeticiones');
@@ -128,6 +129,13 @@ function SetView({ session, cfg }: { session: GymSession; cfg: ProgramConfig }) 
         <div className="rset__what">
           <span className="rset__what-k">Qué hacer</span>
           <p>{e.instructions}</p>
+        </div>
+      )}
+      {(firstOfExercise || showInfo) && <PastNotes name={e.name} currentId={session.id} />}
+      {e.note?.trim() && !firstOfExercise && (
+        <div className="pnotes pnotes--today">
+          <span className="pnotes__k">Tu nota de hoy</span>
+          <p>{e.note}</p>
         </div>
       )}
       <div className={`rset__card rset__card--${s.kind}`}>
@@ -229,6 +237,8 @@ function RestView({ session, cfg }: { session: GymSession; cfg: ProgramConfig })
           +15 s
         </button>
       </div>
+      {lastEx >= 0 && <NoteBox exIndex={lastEx} />}
+      {lastEx >= 0 && newExercise && <PastNotes name={session.exercises[ei]?.name ?? ''} currentId={session.id} />}
       {e && s && (
         <div className="rrest__next">
           <span className="rrest__next-k">{newExercise ? 'Siguiente ejercicio' : 'A continuación'}</span>
@@ -260,7 +270,9 @@ export function Runner() {
 
   if (!session || !s0.program) return <div className="runner" aria-hidden />;
   const p = progress(session);
-  const info = weekInfo(session.week);
+  const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+  const curEx = session.exercises[session.cursor.ex];
+  const curSet = curEx?.sets[session.cursor.set];
 
   const close = async () => {
     const r = await ask({
@@ -279,9 +291,12 @@ export function Runner() {
           <ChevronDown size={28} />
         </button>
         <div className="runner__title">
-          <b>{DAY(session.dayId).name}</b>
+          <b>
+            {DAY(session.dayId).name} · {clock((now - session.startedAt) / 1000)}
+          </b>
           <span>
-            Semana {session.week} · {info.label} · {clock((now - session.startedAt) / 1000)}
+            {curEx && curSet ? `${curEx.name} · ${setLabel(curEx, session.cursor.set)} · ` : finished ? 'Sesión completada · ' : ''}
+            <strong className="runner__pct">{pct} %</strong>
           </span>
         </div>
         <button className="icon-btn" onClick={() => setOverview(true)} aria-label="Ver toda la sesión">

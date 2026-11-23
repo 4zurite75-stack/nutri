@@ -2,14 +2,40 @@ import { useEffect, useRef } from 'react';
 import { BellRing, ChevronUp, Timer } from 'lucide-react';
 import { useGym } from '../store';
 import { useNow } from './useNow';
-import { beep } from '../../lib/sound';
+import { startAlarm, stopAlarm } from '../../lib/alarm';
+import { create } from 'zustand';
 import { toast } from '../../ui/uiStore';
 import { DAY } from '../program';
 import { progress } from './cursor';
 
 const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.max(0, Math.round(sec % 60))).padStart(2, '0')}`;
 
-/** Avisa al terminar el descanso (sonido y destello) y pasa a la siguiente serie. */
+const useAlarm = create<{ on: boolean }>(() => ({ on: false }));
+
+/** Aviso a pantalla completa al acabar el descanso: suena y vibra hasta que lo paras. */
+export function RestAlarm() {
+  const on = useAlarm((x) => x.on);
+  const session = useGym((x) => x.session);
+  if (!on) return null;
+  const close = () => {
+    stopAlarm();
+    useAlarm.setState({ on: false });
+    useGym.getState().setExpanded(true);
+  };
+  const e = session ? session.exercises[session.cursor.ex] : null;
+  return (
+    <div className="ralarm" onClick={close} role="alertdialog">
+      <BellRing size={64} className="ralarm__bell" />
+      <h2>¡Descanso terminado!</h2>
+      {e && <p>Siguiente: {e.name}</p>}
+      <button className="ralarm__btn" onClick={close}>
+        Vamos
+      </button>
+    </div>
+  );
+}
+
+/** Avisa al terminar el descanso (sonido, vibración y aviso) y pasa a la siguiente serie. */
 export function GymRestWatcher() {
   const rest = useGym((x) => x.session?.rest);
   const now = useNow(!!rest, 250);
@@ -19,10 +45,10 @@ export function GymRestWatcher() {
     fired.current = rest.endsAt;
     const late = now - rest.endsAt > 5000;
     if (!late) {
-      beep();
-      document.documentElement.classList.add('rest-flash');
-      setTimeout(() => document.documentElement.classList.remove('rest-flash'), 900);
-      toast('¡A por la siguiente serie!', { tone: 'accent', icon: <BellRing size={18} /> });
+      startAlarm(15);
+      useAlarm.setState({ on: true });
+    } else {
+      toast('El descanso ya terminó: ¡a por la siguiente serie!', { tone: 'accent', icon: <BellRing size={18} /> });
     }
     useGym.getState().mutate((x) => {
       if (x.rest?.endsAt === rest.endsAt) x.rest = null;

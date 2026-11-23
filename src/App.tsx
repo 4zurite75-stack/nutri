@@ -13,7 +13,7 @@ import { ProgramPage } from './gym/screens/ProgramPage';
 import { GymHistory } from './gym/screens/GymHistory';
 import { GymProgress } from './gym/screens/GymProgress';
 import { Runner } from './gym/runner/Runner';
-import { GymMiniBar, GymRestWatcher } from './gym/runner/GymOverlays';
+import { GymMiniBar, GymRestWatcher, RestAlarm } from './gym/runner/GymOverlays';
 import { useGym } from './gym/store';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 
@@ -61,6 +61,7 @@ export function App() {
         <Runner />
       </ErrorBoundary>
       <GymRestWatcher />
+      <RestAlarm />
       <Overlays />
     </div>
   );

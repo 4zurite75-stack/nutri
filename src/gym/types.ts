@@ -84,6 +84,8 @@ export interface GymExerciseLog {
   repMin: number;
   repMax: number;
   sets: GymSet[];
+  /** Notas personales de este ejercicio en esta sesión (técnica, ajustes de máquina…). */
+  note?: string;
 }
 
 export interface GymSession {

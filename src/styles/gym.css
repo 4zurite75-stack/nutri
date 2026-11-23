@@ -1095,3 +1095,130 @@ html.rest-flash .runner::after {
   font-size: 15px;
   height: 36px;
 }
+
+/* Aviso de fin de descanso */
+.ralarm {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 107, 44, 0.95), rgba(200, 60, 10, 0.97) 70%);
+  animation: ralarm-pulse 1.1s ease-in-out infinite;
+}
+.ralarm h2 {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.ralarm p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+.ralarm__bell {
+  animation: ralarm-ring 0.5s ease-in-out infinite;
+}
+.ralarm__btn {
+  margin-top: 18px;
+  width: 220px;
+  height: 64px;
+  border-radius: 32px;
+  background: #fff;
+  color: #c2410c;
+  font-size: 22px;
+  font-weight: 850;
+}
+@keyframes ralarm-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.15);
+  }
+}
+@keyframes ralarm-ring {
+  0%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+
+/* Notas por ejercicio */
+.notebox {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+.notebox__k,
+.pnotes__k {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+.notebox textarea {
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface-3);
+  line-height: 1.4;
+}
+.notebox textarea:focus {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.pnotes {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 214, 10, 0.08);
+  border-left: 3px solid #ffd60a;
+}
+.pnotes p {
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+.pnotes small {
+  display: block;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.pnotes--today {
+  background: var(--surface-2);
+  border-left-color: var(--accent);
+}
+.runner__pct {
+  color: var(--accent);
+  font-weight: 800;
+}
+.wd-note {
+  margin: -2px 14px 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 214, 10, 0.08);
+  font-size: 14px;
+  white-space: pre-wrap;
+}

@@ -318,7 +318,7 @@ function mainExercise(def: ExerciseDef, week: number, sessions: GymSession[], cf
       sets: [
         ...(bw
           ? [mk('warmup', { targetWeight: null, targetReps: 5, restSec: 90 })]
-          : [mk('warmup', { targetReps: 10, restSec: 60 }), mk('warmup', { targetReps: 5, restSec: 75 }), mk('warmup', { targetReps: 3, restSec: 90 }), mk('warmup', { targetReps: 1, restSec: 120 })]),
+          : [mk('warmup', { targetReps: 10, restSec: 60 }), mk('warmup', { targetReps: 5, restSec: 75 }), mk('warmup', { targetReps: 3, restSec: 90 })]),
         mk('top', { targetReps: def.repMin, targetRepsMax: def.repMax, targetRir: '2', restSec: def.restSec }),
         mk('backoff', { derive: bw ? 'top100' : 'top90', targetReps: def.repMin, targetRepsMax: def.repMax, restSec: def.restSec }),
         mk('backoff', { derive: bw ? 'top100' : 'top90', targetReps: def.repMin, targetRepsMax: def.repMax, restSec: def.restSec }),

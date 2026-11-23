@@ -87,6 +87,7 @@ export function SessionDetail({ id }: { id: string }) {
           <div className="wd-ex__head">
             <span className="wd-ex__name">{e.name}</span>
           </div>
+          {e.note?.trim() && <p className="wd-note">📝 {e.note}</p>}
           <div className="wd-sets">
             {e.sets.map((x, i) => (
               <div key={x.id} className={`wd-set ${x.done ? '' : 'is-off'}`}>
