@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { BellRing, ChevronUp, Timer } from 'lucide-react';
 import { useGym } from '../store';
 import { useNow } from './useNow';
-import { startAlarm, stopAlarm } from '../../lib/alarm';
+import { beep, haptic, startAlarm, stopAlarm } from '../../lib/alarm';
 import { create } from 'zustand';
 import { toast } from '../../ui/uiStore';
 import { DAY } from '../program';
@@ -40,7 +40,17 @@ export function GymRestWatcher() {
   const rest = useGym((x) => x.session?.rest);
   const now = useNow(!!rest, 250);
   const fired = useRef<number | null>(null);
+  const warned = useRef<number | null>(null);
   useEffect(() => {
+    // Aviso previo: dos pitidos cuando quedan 10 s.
+    if (rest && rest.duration > 20 && warned.current !== rest.endsAt) {
+      const left = rest.endsAt - now;
+      if (left <= 10000 && left > 8500) {
+        warned.current = rest.endsAt;
+        beep(2);
+        haptic();
+      } else if (left <= 8500) warned.current = rest.endsAt;
+    }
     if (!rest || now < rest.endsAt || fired.current === rest.endsAt) return;
     fired.current = rest.endsAt;
     const late = now - rest.endsAt > 5000;

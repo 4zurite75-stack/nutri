@@ -12,8 +12,10 @@ import { ResultsList, sessionResults } from './SessionResults';
 import { confirm, toast } from '../../ui/uiStore';
 import type { GymSession } from '../types';
 import { setLabel } from '../runner/labels';
+import { feelText } from '../runner/Feel';
 
 const mins = (s: GymSession) => Math.round(((s.endedAt ?? s.startedAt) - s.startedAt) / 60000);
+const prs = (s: GymSession) => s.exercises.filter((e) => e.sets.some((x) => x.pr && x.done)).length;
 const highlight = (s: GymSession) => {
   for (const e of s.exercises) {
     const a = e.sets.find((x) => x.kind === 'amrap' && x.done);
@@ -53,6 +55,12 @@ export function GymHistory() {
                 <span>
                   <Dumbbell size={14} /> {done} series
                 </span>
+                {prs(s) > 0 && (
+                  <span className="wd-set__pr">
+                    <Trophy size={14} /> {prs(s) === 1 ? '1 récord' : `${prs(s)} récords`}
+                  </span>
+                )}
+                {s.feel && <span>{feelText(s.feel)}</span>}
               </div>
             </button>
           );
@@ -75,6 +83,7 @@ export function SessionDetail({ id }: { id: string }) {
         <p className="muted">
           {fmtDateLong(s.startedAt)} · {mins(s)} min · Semana {s.week} · {weekInfo(s.week).label}
         </p>
+        {s.feel && <p className="muted">Sensaciones: {feelText(s.feel)}</p>}
       </div>
       {rows.length > 0 && (
         <>
@@ -95,6 +104,11 @@ export function SessionDetail({ id }: { id: string }) {
                 <span className="wd-set__main">
                   {x.done ? `${fmtLoad(x.weight, e.bodyweight) || '—'} × ${x.reps ?? '—'}` : x.skipped ? 'Saltada' : 'No hecha'}
                   {x.rir != null && <span className="muted"> @ RIR {x.rir}</span>}
+                  {x.pr && x.done && (
+                    <span className="wd-set__pr">
+                      <Trophy size={13} /> Récord
+                    </span>
+                  )}
                 </span>
               </div>
             ))}

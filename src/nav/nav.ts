@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import type { ReactNode } from 'react';
 
-export type Mode = 'gym' | 'nutri';
-export type Tab = 'hoy' | 'alimentos' | 'progreso' | 'ajustes' | 'g-hoy' | 'g-programa' | 'g-historial' | 'g-progreso';
+export type Mode = 'gym' | 'michi' | 'nutri';
+export type Tab = 'hoy' | 'alimentos' | 'progreso' | 'ajustes' | 'g-hoy' | 'g-programa' | 'g-historial' | 'g-progreso' | 'm-michi';
 
 export const MODE_TABS: Record<Mode, Tab[]> = {
   gym: ['g-hoy', 'g-programa', 'g-historial', 'g-progreso', 'ajustes'],
+  michi: ['m-michi', 'ajustes'],
   nutri: ['hoy', 'alimentos', 'progreso', 'ajustes'],
 };
 
@@ -33,7 +34,7 @@ const POP_MS = 300;
 function storedMode(): Mode {
   try {
     const m = localStorage.getItem('fisico-mode');
-    if (m === 'gym' || m === 'nutri') return m;
+    if (m === 'gym' || m === 'michi' || m === 'nutri') return m;
   } catch {
     /* sin almacenamiento */
   }
@@ -52,8 +53,8 @@ applyModeColor(initialMode);
 export const useNav = create<NavState>((set, get) => ({
   mode: initialMode,
   tab: MODE_TABS[initialMode][0],
-  lastTab: { gym: 'g-hoy', nutri: 'hoy' },
-  stacks: { hoy: [], alimentos: [], progreso: [], ajustes: [], 'g-hoy': [], 'g-programa': [], 'g-historial': [], 'g-progreso': [] },
+  lastTab: { gym: 'g-hoy', michi: 'm-michi', nutri: 'hoy' },
+  stacks: { hoy: [], alimentos: [], progreso: [], ajustes: [], 'g-hoy': [], 'g-programa': [], 'g-historial': [], 'g-progreso': [], 'm-michi': [] },
   setMode: (m) => {
     const { mode, tab, lastTab } = get();
     if (m === mode) return;

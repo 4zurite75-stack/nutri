@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, Info, List, SkipForward, Trophy } from 'lucide-react';
+import { ChevronDown, History, Info, List, SkipForward, Trophy } from 'lucide-react';
 import { useGym } from '../store';
 import { getSettings, useSettings } from '../../state/settings';
 import { db } from '../../db/db';
-import { DAY, effectiveTarget, oneRM, trainingMaxes, weekInfo, WAVES } from '../program';
+import { DAY, effectiveTarget, fmtLoad, oneRM, trainingMaxes, weekInfo, WAVES } from '../program';
+import { lastTimeFor, records, setE1RM } from '../history';
+import { useGymSessions } from '../store';
 import type { GymExerciseLog, GymSession, GymSet, ProgramConfig } from '../types';
 import { setLabel, repsText, loadText, setHowTo, platesText } from './labels';
 import { BigNumber } from './BigNumber';
@@ -30,9 +32,27 @@ function defOf(e: GymExerciseLog) {
 /** Feedback inmediato al completar series clave (calibración y AMRAP). */
 async function feedback(session: GymSession, e: GymExerciseLog, s: GymSet) {
   const cfg = (await getSettings()).program;
-  if (!cfg || !e.lift) return;
+  if (!cfg) return;
   const others = (await db.gymSessions.toArray()).filter((x) => x.id !== session.id);
   const all = [...others, session];
+  // Récord: supera el mejor 1RM estimado de este ejercicio (sesiones anteriores y series de hoy).
+  const v = setE1RM(e, s, cfg);
+  const prev = records(others.filter((x) => x.status === 'done'), cfg).get(e.name);
+  if (v != null && prev) {
+    const today = Math.max(0, ...session.exercises.filter((x) => x.name === e.name).flatMap((x) => x.sets.filter((y) => y.id !== s.id).map((y) => setE1RM(x, y, cfg) ?? 0)));
+    const before = Math.max(prev.value, today);
+    if (v > before + 0.05) {
+      toast(`¡Récord en ${e.name.toLowerCase()}! 1RM estimado ${fmtKg(Math.round(v * 10) / 10)} kg (antes ${fmtKg(Math.round(before * 10) / 10)})`, {
+        tone: 'accent',
+        icon: <Trophy size={18} />,
+        duration: 5000,
+      });
+      useGym.getState().mutate((x) => {
+        for (const ex of x.exercises) for (const st of ex.sets) if (st.id === s.id) st.pr = true;
+      });
+    }
+  }
+  if (!e.lift) return;
   if (s.kind === 'top') {
     const rm = oneRM(e.lift, all, cfg);
     const tm = trainingMaxes(e.lift, all, cfg)[0];
@@ -65,6 +85,8 @@ function SetView({ session, cfg }: { session: GymSession; cfg: ProgramConfig }) 
   const [rir, setRir] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [otherWeight, setOtherWeight] = useState(false);
+  const sessions = useGymSessions();
+  const last = useMemo(() => (sessions ? lastTimeFor(sessions, session, ei, si) : null), [sessions, session, ei, si]);
 
   useEffect(() => {
     setWeight(s.weight ?? target ?? (s.ask.weight ? prevWeight : null));
@@ -154,6 +176,18 @@ function SetView({ session, cfg }: { session: GymSession; cfg: ProgramConfig }) 
         </div>
         {plates && <div className="rset__plates">{plates}</div>}
         <p className="rset__how">{setHowTo(e, s, e.kind === 'acc' && e.phase !== 'descarga' ? def?.inc : undefined)}</p>
+        {last && (
+          <div className="rset__last">
+            <History size={15} />
+            <span>
+              La última vez <small>· sem. {last.week}, {last.label}</small>
+            </span>
+            <b>
+              {fmtLoad(last.weight, e.bodyweight) || '—'} × {last.reps}
+              {last.rir != null ? ` @${last.rir}` : ''}
+            </b>
+          </div>
+        )}
       </div>
 
       {(s.ask.weight || s.ask.reps || s.ask.rir || otherWeight) && (

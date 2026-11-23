@@ -68,6 +68,8 @@ export interface GymSet {
   skipped?: boolean;
   doneAt?: number;
   restSec: number;
+  /** Récord personal (mejor 1RM estimado de este ejercicio hasta ese momento). */
+  pr?: boolean;
 }
 
 export interface GymExerciseLog {
@@ -102,6 +104,14 @@ export interface GymSession {
   cursor: { ex: number; set: number };
   rest?: { endsAt: number; duration: number } | null;
   notes?: string;
+  /** Sensaciones del 1 al 5. Molestias: 1 = ninguna, 5 = muchas. */
+  feel?: Feel;
+}
+
+export interface Feel {
+  energy?: number;
+  sleep?: number;
+  pain?: number;
 }
 
 export interface ProgramConfig {

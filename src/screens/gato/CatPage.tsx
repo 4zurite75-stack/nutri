@@ -2,19 +2,22 @@ import { useState } from 'react';
 import { Check, Flame, Pencil } from 'lucide-react';
 import { Page } from '../../ui/Page';
 import { Cat } from './Cat';
-import { HealthBar } from './CatCard';
+import { HealthBar } from './HealthBar';
 import { updatePet, usePet } from './usePet';
 import { catSays, isNight } from './talk';
-import { GOOD_DAY, GYM_BONUS, MAX, MOOD_LABEL, STAGES } from '../../lib/pet';
+import { GOOD_DAY, MAX_REST, MAX_TRAIN, MOOD_LABEL, STAGES, type PartKey } from '../../lib/pet';
+import { EvolutionSheet } from './EvolutionSheet';
+import { useNav } from '../../nav/nav';
 import { PromptSheet } from '../../ui/PromptSheet';
 import { addDays, dayLabel, fmtK, fmtKg, isoDate } from '../../lib/format';
 
+/** Apartado propio de la mascota (raíz del modo Michi). */
 export function CatPage() {
   const v = usePet();
   const [petting, setPetting] = useState(false);
   const [count, setCount] = useState(0);
   const [renaming, setRenaming] = useState(false);
-  if (!v) return <Page title="Tu gato" back />;
+  if (!v) return <Page title="Michi" large />;
   const { state, pet, today } = v;
   const { input, result, targets } = today;
   const next = STAGES[state.stage + 1];
@@ -27,33 +30,28 @@ export function CatPage() {
     setTimeout(() => setPetting(false), 1600);
   };
 
-  const items = [
-    {
-      label: 'Calorías',
-      got: result.parts.kcal,
-      max: MAX.kcal,
-      detail: `${fmtK(input.kcal)} de ${fmtK(targets.kcal)} kcal (±10 %)`,
-    },
-    { label: 'Proteína', got: result.parts.protein, max: MAX.protein, detail: `${fmtK(input.protein)} de ${targets.protein} g (mín. 90 %)` },
-    {
-      label: 'Agua',
-      got: result.parts.water,
-      max: MAX.water,
-      detail: `${fmtKg(Math.round(input.waterMl / 100) / 10)} de ${fmtKg(targets.waterMl / 1000)} L`,
-    },
-    {
-      label: 'Suplementos',
-      got: result.parts.supps,
-      max: MAX.supps,
-      detail: input.suppsTotal ? `${input.suppsTaken} de ${input.suppsTotal}` : 'Sin suplementos activos',
-    },
-    { label: 'Peso', got: result.parts.weight, max: MAX.weight, detail: input.weighed ? 'Registrado' : 'Sin registrar' },
+  const { parts, max } = result;
+  const item = (k: PartKey, label: string, detail: string) => ({ key: k, label, got: parts[k], max: max[k], detail });
+  const nutrition = [
+    item('kcal', 'Calorías', `${fmtK(input.kcal)} de ${fmtK(targets.kcal)} kcal (±10 %)`),
+    item('protein', 'Proteína', `${fmtK(input.protein)} de ${targets.protein} g (mín. 90 %)`),
+    item('water', 'Agua', `${fmtKg(Math.round(input.waterMl / 100) / 10)} de ${fmtKg(targets.waterMl / 1000)} L`),
+    item('supps', 'Suplementos', input.suppsTotal ? `${input.suppsTaken} de ${input.suppsTotal}` : 'Sin suplementos activos'),
+    item('weight', 'Peso', input.weighed ? 'Registrado' : 'Sin registrar'),
   ];
+  const activity = [
+    ...(result.training
+      ? [item('gym', 'Sesión de gym', today.gym === 'done' ? 'Completada' : 'Toca entrenar hoy')]
+      : []),
+    item('steps', 'Pasos', `${fmtK(input.steps)} de ${fmtK(today.stepsGoal)} (se apuntan en Gym › Hoy)`),
+  ];
+  const sum = (xs: { max: number }[]) => xs.reduce((a, x) => a + x.max, 0);
+  const goMode = useNav.getState().setMode;
 
   return (
     <Page
       title={pet.name}
-      back="Hoy"
+      large
       right={
         <button className="icon-btn" onClick={() => setRenaming(true)} aria-label="Cambiar nombre">
           <Pencil size={20} />
@@ -110,35 +108,36 @@ export function CatPage() {
         )}
       </div>
 
-      <div className="group-title">Hoy · {result.score}/100</div>
-      <div className="group">
-        {items.map((it) => (
-          <div key={it.label} className="group__row cat-item">
-            <span className={`cat-item__check ${it.got === it.max ? 'is-on' : it.got > 0 ? 'is-half' : ''}`}>
-              {it.got === it.max && <Check size={14} strokeWidth={3} />}
-            </span>
-            <span className="cat-item__text">
-              {it.label}
-              <small className="muted">{it.detail}</small>
-            </span>
-            <span className="group__value">
-              {it.got}/{it.max}
-            </span>
-          </div>
-        ))}
+      <div className="group-title">
+        Hoy · {result.score}/100 · {result.training ? 'día de entreno' : 'día de descanso'}
       </div>
-      {today.gym && (
-        <div className="group" style={{ marginTop: 8 }}>
-          <div className="group__row cat-item">
-            <span className={`cat-item__check ${today.gym === 'done' ? 'is-on' : ''}`}>{today.gym === 'done' && <Check size={14} strokeWidth={3} />}</span>
-            <span className="cat-item__text">
-              Entreno de hoy
-              <small className="muted">{today.gym === 'done' ? 'Sesión completada' : 'Día de gym: complétalo para sumarle salud'}</small>
+      {[
+        { title: 'Nutrición', got: result.nutrition, list: nutrition, mode: 'nutri' as const },
+        { title: result.training ? 'Entreno' : 'Actividad', got: result.activity, list: activity, mode: 'gym' as const },
+      ].map((sec) => (
+        <div key={sec.title} className="group catsec">
+          <button className="group__row catsec__head" onClick={() => goMode(sec.mode)}>
+            <b>{sec.title}</b>
+            <span className="group__value">
+              {sec.got}/{sum(sec.list)}
             </span>
-            <span className="group__value">±{GYM_BONUS} salud</span>
-          </div>
+          </button>
+          {sec.list.map((it) => (
+            <div key={it.key} className="group__row cat-item">
+              <span className={`cat-item__check ${it.got === it.max ? 'is-on' : it.got > 0 ? 'is-half' : ''}`}>
+                {it.got === it.max && <Check size={14} strokeWidth={3} />}
+              </span>
+              <span className="cat-item__text">
+                {it.label}
+                <small className="muted">{it.detail}</small>
+              </span>
+              <span className="group__value">
+                {it.got}/{it.max}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
+      ))}
       <p className="hint group-hint">
         Un día cuenta como cumplido con {GOOD_DAY} puntos o más. La puntuación de hoy se cierra a medianoche.
       </p>
@@ -161,15 +160,19 @@ export function CatPage() {
       <div className="group-title">Cómo funciona</div>
       <div className="group steps">
         <div className="group__row">
-          Cada día suma hasta 100 puntos: calorías a ±10 % del objetivo ({MAX.kcal}), proteína al 90 % ({MAX.protein}), agua ({MAX.water}),
-          suplementos ({MAX.supps}) y pesarte ({MAX.weight}).
+          Cada día suma hasta 100 puntos. Los días de gym: nutrición {nutMax(MAX_TRAIN)} + sesión hecha {MAX_TRAIN.gym} + pasos {MAX_TRAIN.steps}. Los
+          días de descanso: nutrición {nutMax(MAX_REST)} + pasos {MAX_REST.steps}.
+        </div>
+        <div className="group__row">
+          Nutrición: calorías a ±10 % del objetivo, proteína al 90 %, agua, suplementos y pesarte. Pasos: proporcional a tu objetivo diario.
         </div>
         <div className="group__row">Los días buenos le suben la salud; los malos o sin registrar, se la bajan. Si dejas de cuidarlo, enferma y se desnutre.</div>
         <div className="group__row">Con días cumplidos crece: cachorro → joven (7) → adulto (21) → leyenda (60).</div>
-        <div className="group__row">Los días de gym del programa suman {GYM_BONUS} de salud si haces la sesión y restan {GYM_BONUS} si te la saltas.</div>
+        <div className="group__row">Si te saltas una sesión de gym, pierde esos {MAX_TRAIN.gym} puntos y se pone triste.</div>
         <div className="group__row">Nunca muere: unos cuantos días buenos seguidos lo recuperan.</div>
       </div>
 
+      <EvolutionSheet view={v} />
       <PromptSheet
         open={renaming}
         title="Nombre del gato"
@@ -180,3 +183,5 @@ export function CatPage() {
     </Page>
   );
 }
+
+const nutMax = (m: Record<PartKey, number>) => m.kcal + m.protein + m.water + m.supps + m.weight;

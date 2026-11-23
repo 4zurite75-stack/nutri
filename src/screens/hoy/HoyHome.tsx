@@ -17,7 +17,6 @@ import { confirm, showActions, toast } from '../../ui/uiStore';
 import { PromptSheet } from '../../ui/PromptSheet';
 import { CheckInCard } from '../progreso/CheckInCard';
 import { useAnalysis } from '../progreso/useAnalysis';
-import { CatCard } from '../gato/CatCard';
 import { ModeSwitch } from '../../nav/ModeSwitch';
 
 const WEEK = 7 * 86400000;
@@ -189,12 +188,6 @@ export function HoyHome() {
               </span>
             </div>
           </section>
-        )}
-
-        {isToday && (
-          <div className="hoy__cards" style={{ paddingTop: 12 }}>
-            <CatCard />
-          </div>
         )}
 
         {checkInDue && analysis && (

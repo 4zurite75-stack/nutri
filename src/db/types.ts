@@ -106,6 +106,8 @@ export interface Supplement {
   dose: number;
   unit: string; // g, mg, cápsulas, UI…
   time?: string; // texto libre: "con el desayuno"
+  /** Horas de aviso ("15:00"). */
+  reminders?: string[];
   active: boolean;
   order: number;
 }

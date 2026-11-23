@@ -1,19 +1,24 @@
-import { Apple, Dumbbell } from 'lucide-react';
-import { useNav } from './nav';
+import { Apple, Cat, Dumbbell } from 'lucide-react';
+import { useNav, type Mode } from './nav';
 
-/** Selector principal de apartado: Gym o Nutrición. */
+const MODES: { id: Mode; label: string; icon: typeof Apple }[] = [
+  { id: 'gym', label: 'Gym', icon: Dumbbell },
+  { id: 'michi', label: 'Michi', icon: Cat },
+  { id: 'nutri', label: 'Nutrición', icon: Apple },
+];
+
+/** Selector principal de apartado: Gym, Michi o Nutrición. */
 export function ModeSwitch() {
   const mode = useNav((s) => s.mode);
   const setMode = useNav((s) => s.setMode);
   return (
     <div className={`modesw modesw--${mode}`} role="tablist" aria-label="Apartado">
       <span className="modesw__thumb" />
-      <button role="tab" aria-selected={mode === 'gym'} className={mode === 'gym' ? 'is-active' : ''} onClick={() => setMode('gym')}>
-        <Dumbbell size={16} strokeWidth={2.4} /> Gym
-      </button>
-      <button role="tab" aria-selected={mode === 'nutri'} className={mode === 'nutri' ? 'is-active' : ''} onClick={() => setMode('nutri')}>
-        <Apple size={16} strokeWidth={2.4} /> Nutrición
-      </button>
+      {MODES.map(({ id, label, icon: Icon }) => (
+        <button key={id} role="tab" aria-selected={mode === id} className={mode === id ? 'is-active' : ''} onClick={() => setMode(id)}>
+          <Icon size={15} strokeWidth={2.4} /> {label}
+        </button>
+      ))}
     </div>
   );
 }

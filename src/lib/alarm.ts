@@ -82,6 +82,30 @@ function ring() {
   }
 }
 
+/** Pitido corto de aviso (p. ej. quedan 10 s): `n` pitidos suaves. */
+export function beep(n = 2, freq = 1047) {
+  if (!ctx) return;
+  try {
+    if (ctx.state === 'suspended') void ctx.resume();
+    const t0 = ctx.currentTime + 0.02;
+    for (let i = 0; i < n; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = t0 + i * 0.22;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.4, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.17);
+    }
+  } catch {
+    /* nada */
+  }
+}
+
 /** Suena y vibra cada segundo hasta que se para (o como mucho `seconds`). */
 export function startAlarm(seconds = 15) {
   stopAlarm();

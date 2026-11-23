@@ -1405,3 +1405,42 @@
 .mbar2__label {
   white-space: nowrap;
 }
+
+/* ---------- Horas de aviso de suplementos ---------- */
+.rtimes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.rtime {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.rtime__input {
+  width: 112px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.rtime__add {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rem-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px var(--gutter) 0;
+}
+.rem-btns .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.rem-warn {
+  color: #ffd60a;
+}

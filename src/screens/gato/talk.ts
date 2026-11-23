@@ -25,6 +25,8 @@ export function catSays(v: PetView, petting: boolean, petCount: number): string 
   if (v.state.mood === 'desnutrido' || v.state.mood === 'enfermo') {
     if (hour < 12) return MOOD_TEXT[v.state.mood];
   }
+  if (v.missedYesterday && !v.today.gym && hour < 14) return 'Ayer no fuimos al gym… me he quedado un poco triste. ¡Recupérala si puedes!';
+  if (v.today.gym === 'done' && hour < 22 && input.kcal > 0 && v.today.result.score < GOOD_DAY) return '¡Qué buen entreno! Ahora a comer bien para crecer.';
   if (v.today.gym === 'pending' && hour >= 17) return '¡Hoy toca gym! Después de entrenar me pondré más fuerte.';
   if (input.kcal === 0 && hour >= 11) return 'Tengo hambre… ¿apuntamos lo que has comido?';
   if (!input.weighed && hour < 12) return '¿Nos pesamos esta mañana?';
@@ -34,6 +36,7 @@ export function catSays(v: PetView, petting: boolean, petCount: number): string 
   if (proteinLeft > targets.protein * 0.1 && hour >= 13) return `Me faltan ${fmtK(proteinLeft)} g de proteína para estar fuerte.`;
   if (input.waterMl < targets.waterMl * 0.7 && hour >= 12)
     return `¿Bebemos agua? Llevamos ${fmtKg(Math.round(input.waterMl / 100) / 10)} de ${fmtKg(targets.waterMl / 1000)} L.`;
+  if (input.steps < v.today.stepsGoal * 0.5 && hour >= 18) return '¿Damos un paseo? Hoy vamos cortos de pasos.';
   if (input.kcal < targets.kcal * 0.9 && hour >= 20) return `Aún nos quedan ${fmtK(targets.kcal - input.kcal)} kcal de hoy.`;
   return MOOD_TEXT[v.state.mood];
 }

@@ -4,13 +4,17 @@ import { Page } from '../../ui/Page';
 import { Chip } from '../../ui/controls';
 import { useSettings } from '../../state/settings';
 import { useGymSessions } from '../store';
-import { DAYS, LIFTS, TOTAL_WEEKS, epley, oneRM, sessionDate, trainingMaxes, weekOn } from '../program';
+import { DAYS, LIFTS, TOTAL_WEEKS, epley, fmtLoad, oneRM, sessionDate, trainingMaxes, weekOn } from '../program';
 import type { LiftId } from '../types';
 import { LineChart } from '../../charts/LineChart';
 import { BarChart } from '../../charts/BarChart';
 import { addDays, dayLabel, fmtK, fmtKg, isoDate, isoToTs } from '../../lib/format';
 import { db } from '../../db/db';
 import { doneFor } from './GymHoy';
+import { records } from '../history';
+import { FEEL_ROWS } from '../runner/Feel';
+import { Sparkline } from '../../charts/Sparkline';
+import { Trophy } from 'lucide-react';
 
 export function GymProgress() {
   const s = useSettings();
@@ -47,6 +51,10 @@ export function GymProgress() {
 
   if (!cfg) return <Page title="Progreso" large><p className="muted" style={{ padding: 24 }}>Activa el programa en la pestaña Hoy.</p></Page>;
 
+  const doneS = sessions.filter((x) => x.status === 'done').sort((a, b) => a.startedAt - b.startedAt);
+  const order = DAYS.flatMap((d) => d.exercises.map((e) => e.name));
+  const prList = [...records(doneS, cfg).values()].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  const feels = doneS.map((x) => x.feel).filter((f): f is NonNullable<typeof f> => !!f);
   const rm = oneRM(lift, sessions, cfg);
   const tms = trainingMaxes(lift, sessions, cfg);
   const scheduledSoFar: { week: number; day: (typeof DAYS)[number]['id'] }[] = [];
@@ -129,6 +137,56 @@ export function GymProgress() {
         </div>
       </div>
       <p className="hint group-hint">1RM estimado con Epley usando reps + reserva en tus series top, «+» y AMRAP.</p>
+
+      <div className="section-head">
+        <h2>Récords</h2>
+      </div>
+      {prList.length === 0 ? (
+        <p className="hint group-hint">Aparecerán cuando completes sesiones.</p>
+      ) : (
+        <div className="group">
+          {prList.map((r) => (
+            <div key={r.name} className="group__row prrow">
+              <Trophy size={16} className="prrow__icon" />
+              <span className="prrow__text">
+                {r.name}
+                <small className="muted">
+                  {fmtLoad(r.weight, r.bodyweight)} × {r.reps} · sem. {r.week}
+                </small>
+              </span>
+              <span className="group__value">
+                <b>{fmtKg(Math.round(r.value))}</b> kg
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="hint group-hint">Mejor 1RM estimado de cada ejercicio. Cuando lo superas en una serie, la app te avisa.</p>
+
+      <div className="section-head">
+        <h2>Sensaciones</h2>
+      </div>
+      {feels.length === 0 ? (
+        <p className="hint group-hint">Puntúa cómo te has sentido al terminar cada sesión.</p>
+      ) : (
+        <div className="kpis">
+          {FEEL_ROWS.map((r) => {
+            const vals = feels.map((f) => f[r.key]).filter((x): x is number => x != null);
+            const recent = vals.slice(-6);
+            const avg = recent.length ? recent.reduce((a, x) => a + x, 0) / recent.length : null;
+            return (
+              <div key={r.key} className="kpi">
+                <span className="kpi__label">
+                  {r.emoji} {r.label.split(' ')[0]}
+                </span>
+                <span className="kpi__value">{avg == null ? '—' : avg.toFixed(1).replace('.', ',')}</span>
+                {vals.length > 1 ? <Sparkline values={vals.slice(-12)} width={80} height={22} /> : <span className="delta delta--same">media</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {feels.length > 0 && <p className="hint group-hint">Media de las últimas 6 sesiones (1 a 5). En molestias, cuanto más bajo, mejor.</p>}
 
       <div className="section-head">
         <h2>Pasos · 14 días</h2>

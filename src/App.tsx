@@ -16,6 +16,8 @@ import { Runner } from './gym/runner/Runner';
 import { GymMiniBar, GymRestWatcher, RestAlarm } from './gym/runner/GymOverlays';
 import { useGym } from './gym/store';
 import { ErrorBoundary } from './ui/ErrorBoundary';
+import { CatPage } from './screens/gato/CatPage';
+import { SuppReminderWatcher } from './screens/hoy/SuppReminderWatcher';
 
 function hideLaunch() {
   const el = document.getElementById('launch');
@@ -50,6 +52,7 @@ export function App() {
         <TabView tab="g-programa" root={<ProgramPage />} />
         <TabView tab="g-historial" root={<GymHistory />} />
         <TabView tab="g-progreso" root={<GymProgress />} />
+        <TabView tab="m-michi" root={<CatPage />} />
         <TabView tab="hoy" root={<HoyHome />} />
         <TabView tab="alimentos" root={<AlimentosHome />} />
         <TabView tab="progreso" root={<ProgresoHome />} />
@@ -62,6 +65,7 @@ export function App() {
       </ErrorBoundary>
       <GymRestWatcher />
       <RestAlarm />
+      <SuppReminderWatcher />
       <Overlays />
     </div>
   );

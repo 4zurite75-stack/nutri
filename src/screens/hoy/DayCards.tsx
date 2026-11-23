@@ -112,6 +112,7 @@ export function SupplementsCard({ day, supplements }: { day: DayLog; supplements
                 <span className="supp__dose">
                   {fmtKg(s.dose)} {s.unit}
                   {s.time ? ` · ${s.time}` : ''}
+                  {s.reminders?.length ? ` · 🔔 ${s.reminders.join(', ')}` : ''}
                 </span>
               </span>
               {streak > 1 && (

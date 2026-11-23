@@ -1,4 +1,4 @@
-import { Apple, CalendarDays, CalendarRange, ChartLine, Clock3, Dumbbell, Settings } from 'lucide-react';
+import { Apple, Cat, CalendarDays, CalendarRange, ChartLine, Clock3, Dumbbell, Settings } from 'lucide-react';
 import { MODE_TABS, useNav, type Tab } from './nav';
 
 const META: Record<Tab, { label: string; icon: typeof Apple }> = {
@@ -10,6 +10,7 @@ const META: Record<Tab, { label: string; icon: typeof Apple }> = {
   'g-programa': { label: 'Programa', icon: CalendarRange },
   'g-historial': { label: 'Historial', icon: Clock3 },
   'g-progreso': { label: 'Progreso', icon: ChartLine },
+  'm-michi': { label: 'Michi', icon: Cat },
 };
 
 export function TabBar() {

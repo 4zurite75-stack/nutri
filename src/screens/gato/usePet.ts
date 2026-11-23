@@ -20,7 +20,9 @@ export interface PetData {
 export interface PetView {
   pet: PetData;
   state: PetState;
-  today: { input: DayInput; result: DayScore; targets: Targets; pendingSupps: string[]; gym: 'done' | 'pending' | null };
+  today: { input: DayInput; result: DayScore; targets: Targets; pendingSupps: string[]; gym: 'done' | 'pending' | null; stepsGoal: number };
+  /** Ayer tocaba gym y no se hizo. */
+  missedYesterday: boolean;
 }
 
 /** Días que se recalculan por si se registran tarde (ayer y anteayer). Los anteriores quedan cerrados. */
@@ -28,7 +30,7 @@ const OPEN_DAYS = 3;
 
 export function usePet(): PetView | null | undefined {
   const data = useLiveQuery(async () => {
-    const [petRow, targetsRow, intake, days, weights, supps, programRow, gymSessions] = await Promise.all([
+    const [petRow, targetsRow, intake, days, weights, supps, programRow, gymSessions, stepsRow] = await Promise.all([
       db.settings.get('pet'),
       db.settings.get('targets'),
       intakeByDate(),
@@ -37,6 +39,7 @@ export function usePet(): PetView | null | undefined {
       db.supplements.toArray(),
       db.settings.get('program'),
       db.gymSessions.toArray(),
+      db.settings.get('stepsGoal'),
     ]);
     const targets = targetsRow?.value as Targets | undefined;
     if (!targets) return null;
@@ -45,6 +48,17 @@ export function usePet(): PetView | null | undefined {
     const dayMap = new Map(days.map((d) => [d.date, d]));
     const weighed = new Set(weights.map((w) => w.date));
     const active = supps.filter((s) => s.active);
+    const stepsGoal = (stepsRow?.value as number | undefined) ?? 8000;
+    // Días de gym programados: hecho, saltado o (hoy) pendiente.
+    const program = programRow?.value as ProgramConfig | null | undefined;
+    const doneKey = new Set((gymSessions as GymSession[]).filter((g) => g.status === 'done').map((g) => `${g.week}-${g.dayId}`));
+    const gymOn = (date: string): DayInput['gym'] => {
+      if (!program || date < program.startDate) return null;
+      const sc = scheduledOn(program, date);
+      if (!sc) return null;
+      if (doneKey.has(`${sc.week}-${sc.day}`)) return 'done';
+      return date === today ? 'pending' : 'missed';
+    };
     const input = (date: string): DayInput => {
       const d = dayMap.get(date);
       return {
@@ -54,6 +68,9 @@ export function usePet(): PetView | null | undefined {
         suppsTaken: active.filter((s) => d?.supplements?.[s.id]).length,
         suppsTotal: active.length,
         weighed: weighed.has(date),
+        steps: d?.steps ?? 0,
+        stepsGoal,
+        gym: gymOn(date),
       };
     };
     const scores = { ...pet.scores };
@@ -68,31 +85,20 @@ export function usePet(): PetView | null | undefined {
         changed = true;
       }
     }
-    // Días de gym programados: hecho o saltado (solo días cerrados).
-    const program = programRow?.value as ProgramConfig | null | undefined;
-    const gym: Record<string, 'done' | 'missed'> = {};
-    const doneKey = new Set((gymSessions as GymSession[]).filter((g) => g.status === 'done').map((g) => `${g.week}-${g.dayId}`));
-    let gymToday: 'done' | 'pending' | null = null;
-    if (program) {
-      for (let d = pet.startDate < program.startDate ? program.startDate : pet.startDate; d <= today; d = addDays(d, 1)) {
-        const sc = scheduledOn(program, d);
-        if (!sc) continue;
-        const ok = doneKey.has(`${sc.week}-${sc.day}`);
-        if (d === today) gymToday = ok ? 'done' : 'pending';
-        else gym[d] = ok ? 'done' : 'missed';
-      }
-    }
     const todayInput = input(today);
+    const gymToday = todayInput.gym === 'done' ? 'done' : todayInput.gym ? 'pending' : null;
     const view: PetView = {
       pet: { ...pet, scores },
-      state: computePet(pet.startDate, scores, today, gym),
+      state: computePet(pet.startDate, scores, today),
       today: {
         input: todayInput,
         result: scoreDay(todayInput, targets),
         targets,
         pendingSupps: active.filter((s) => !dayMap.get(today)?.supplements?.[s.id]).map((s) => s.name),
         gym: gymToday,
+        stepsGoal,
       },
+      missedYesterday: gymOn(addDays(today, -1)) === 'missed',
     };
     return { view, save: changed || 'isNew' in pet ? { name: pet.name, startDate: pet.startDate, scores, lastStage: pet.lastStage } : null };
   }, []);
