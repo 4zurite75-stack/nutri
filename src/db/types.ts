@@ -113,6 +113,8 @@ export interface Supplement {
 export interface DayLog {
   date: string; // YYYY-MM-DD
   waterMl: number;
+  /** Pasos del día (pegados desde Apple Salud con el Atajo o escritos a mano). */
+  steps?: number;
   /** id del suplemento → marca de tiempo en que se tomó */
   supplements: Record<string, number>;
 }

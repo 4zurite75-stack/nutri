@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { useNav, type Tab } from './nav';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 
 /** Franja invisible en el borde izquierdo: deslizar hacia la derecha vuelve atrás (como en iOS). */
 function EdgeSwipe({ screen }: { screen: React.RefObject<HTMLDivElement | null> }) {
@@ -90,12 +91,14 @@ export function TabView({ tab, root }: { tab: Tab; root: ReactNode }) {
   const topKey = live.length ? live[live.length - 1].key : null;
   return (
     <section className={`tabview ${active ? 'is-active' : ''}`} aria-hidden={!active}>
-      <div className={`stack-screen is-root ${live.length > 0 ? 'is-covered' : ''}`}>{root}</div>
+      <div className={`stack-screen is-root ${live.length > 0 ? 'is-covered' : ''}`}>
+        <ErrorBoundary>{root}</ErrorBoundary>
+      </div>
       {stack.map((e) => {
         const covered = !e.leaving && topKey !== null && e.key !== topKey;
         return (
           <Pushed key={e.key} leaving={e.leaving} covered={covered} isTop={e.key === topKey}>
-            {e.render()}
+            <ErrorBoundary>{e.render()}</ErrorBoundary>
           </Pushed>
         );
       })}

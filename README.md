@@ -1,6 +1,9 @@
-# Nutri — dieta, calorías y macros (PWA)
+# Físico — gym y nutrición (PWA)
 
-App web instalable para iPhone: calcula calorías y macros según tu objetivo, registra lo que comes
+App web instalable para iPhone con dos apartados:
+
+- **Gym:** programa Torso · Pierna · Full Body de 17 semanas por olas (calibración de 1RM, Training Max, AMRAP, doble progresión de accesorios y descargas), con sesión guiada serie a serie y temporizador de descanso.
+- **Nutrición:** calcula calorías y macros según tu objetivo, registra lo que comes
 (código de barras con Open Food Facts, foto de la etiqueta con IA opcional o a mano), agua, suplementos
 y peso, y ajusta el plan cada semana con tu progreso real. Los datos se guardan solo en el dispositivo.
 

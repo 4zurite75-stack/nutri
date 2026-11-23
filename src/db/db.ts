@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { CheckIn, DayLog, Entry, Food, MealTemplate, SettingRow, Supplement, WeightEntry } from './types';
 import { seedFoods } from './seedFoods';
+import type { GymSession } from '../gym/types';
 
 export class NutriDB extends Dexie {
   foods!: EntityTable<Food, 'id'>;
@@ -11,6 +12,7 @@ export class NutriDB extends Dexie {
   templates!: EntityTable<MealTemplate, 'id'>;
   checkins!: EntityTable<CheckIn, 'id'>;
   settings!: EntityTable<SettingRow, 'key'>;
+  gymSessions!: EntityTable<GymSession, 'id'>;
 
   constructor() {
     super('nutri');
@@ -23,6 +25,10 @@ export class NutriDB extends Dexie {
       templates: 'id, createdAt',
       checkins: 'id, date',
       settings: 'key',
+    });
+    // v2: apartado Gym (sesiones del programa). Las tablas anteriores no cambian.
+    this.version(2).stores({
+      gymSessions: 'id, week, dayId, date, status',
     });
     this.on('populate', (tx) => {
       tx.table('foods').bulkAdd(seedFoods());

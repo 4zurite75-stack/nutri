@@ -84,8 +84,11 @@ export interface PetState {
   days: { date: string; score: number }[];
 }
 
+/** Salud extra por los días de gym programados: sesión hecha +4, saltada −4. */
+export const GYM_BONUS = 4;
+
 /** Recorre los días cerrados (hasta ayer) desde que se adoptó el gato. */
-export function computePet(startDate: string, scores: Record<string, number>, today: string): PetState {
+export function computePet(startDate: string, scores: Record<string, number>, today: string, gym: Record<string, 'done' | 'missed'> = {}): PetState {
   let health = 70;
   let goodDays = 0;
   let streak = 0;
@@ -93,7 +96,8 @@ export function computePet(startDate: string, scores: Record<string, number>, to
   for (let d = startDate; d < today; d = addDays(d, 1)) {
     const s = scores[d] ?? 0;
     days.push({ date: d, score: s });
-    health = Math.max(0, Math.min(100, health + healthDelta(s)));
+    const g = gym[d] === 'done' ? GYM_BONUS : gym[d] === 'missed' ? -GYM_BONUS : 0;
+    health = Math.max(0, Math.min(100, health + healthDelta(s) + g));
     if (s >= GOOD_DAY) {
       goodDays++;
       streak++;

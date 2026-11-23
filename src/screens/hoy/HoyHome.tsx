@@ -18,6 +18,7 @@ import { PromptSheet } from '../../ui/PromptSheet';
 import { CheckInCard } from '../progreso/CheckInCard';
 import { useAnalysis } from '../progreso/useAnalysis';
 import { CatCard } from '../gato/CatCard';
+import { ModeSwitch } from '../../nav/ModeSwitch';
 
 const WEEK = 7 * 86400000;
 
@@ -145,6 +146,10 @@ export function HoyHome() {
   return (
     <div className="page hoy">
       <header className="hoy__head">
+        <div className="hoy__mode">
+          <ModeSwitch />
+        </div>
+        <div className="hoy__row">
         <button className="icon-btn" onClick={() => setDate(addDays(date, -1))} aria-label="Día anterior">
           <ChevronLeft size={26} />
         </button>
@@ -158,6 +163,7 @@ export function HoyHome() {
         <button className="icon-btn hoy__menu" onClick={dayMenu} aria-label="Opciones del día">
           <MoreHorizontal size={22} />
         </button>
+        </div>
       </header>
       <div className="page__scroll hoy__scroll">
         {t && (

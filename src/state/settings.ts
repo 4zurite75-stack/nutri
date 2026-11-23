@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import type { Meal, Profile, Targets } from '../db/types';
+import type { ProgramConfig } from '../gym/types';
 
 export type AiModel = 'claude-opus-5-5' | 'claude-haiku-5-5';
 
@@ -12,6 +13,8 @@ export interface Settings {
   aiModel: AiModel;
   lastBackupAt: number;
   lastCheckInAt: number;
+  program: ProgramConfig | null;
+  stepsGoal: number;
 }
 
 export const DEFAULT_MEALS: Meal[] = [
@@ -30,6 +33,8 @@ export const DEFAULT_SETTINGS: Settings = {
   aiModel: 'claude-opus-5-5',
   lastBackupAt: 0,
   lastCheckInAt: 0,
+  program: null,
+  stepsGoal: 8000,
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -40,9 +45,18 @@ export async function getSettings(): Promise<Settings> {
 }
 
 const LOADING = { ...DEFAULT_SETTINGS, loading: true } as Settings & { loading?: boolean };
+/** Últimos ajustes leídos: así las pantallas nuevas no empiezan con valores vacíos. */
+let cache: Settings | null = null;
 
 export function useSettings(): Settings & { loading?: boolean } {
-  return useLiveQuery(getSettings, [], LOADING);
+  return useLiveQuery(
+    async () => {
+      cache = await getSettings();
+      return cache;
+    },
+    [],
+    cache ?? LOADING,
+  );
 }
 
 export async function setSetting<K extends keyof Settings>(key: K, value: Settings[K]) {

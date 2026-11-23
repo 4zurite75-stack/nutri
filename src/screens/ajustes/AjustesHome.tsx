@@ -16,6 +16,10 @@ import { SupplementsPage } from './SupplementsPage';
 import { AiPage } from './AiPage';
 import { GOAL_LABEL } from '../../lib/nutrition';
 import { useSupplements } from '../../db/hooks';
+import { Dumbbell, Footprints } from 'lucide-react';
+import { ProgramSettings } from '../../gym/screens/ProgramPage';
+import { PromptSheet } from '../../ui/PromptSheet';
+import { parseSteps } from '../../gym/screens/StepsCard';
 
 function useStorageInfo() {
   const [info, setInfo] = useState<{ usage?: number; persisted?: boolean }>({});
@@ -48,6 +52,7 @@ export function AjustesHome() {
   const storage = useStorageInfo();
   const [busy, setBusy] = useState<string | null>(null);
   const [installOpen, setInstallOpen] = useState(false);
+  const [stepsOpen, setStepsOpen] = useState(false);
   const backupInput = useRef<HTMLInputElement>(null);
   const foodsInput = useRef<HTMLInputElement>(null);
   const standalone = isStandalone();
@@ -114,7 +119,25 @@ export function AjustesHome() {
         </button>
       )}
 
-      <div className="group-title">Plan</div>
+      <div className="group-title">Gym</div>
+      <div className="group">
+        <button className="group__row group__row--link" onClick={() => (s.program ? push(() => <ProgramSettings />) : toast('Activa el programa en Gym → Hoy'))}>
+          <span className="group__icon group__icon--orange">
+            <Dumbbell size={18} />
+          </span>
+          <span>Programa Torso · Pierna · Full Body</span>
+          <span className="group__value">{s.program ? 'Activo' : 'Sin activar'}</span>
+        </button>
+        <button className="group__row group__row--link" onClick={() => setStepsOpen(true)}>
+          <span className="group__icon group__icon--yellow">
+            <Footprints size={18} />
+          </span>
+          <span>Objetivo de pasos</span>
+          <span className="group__value">{fmtK(s.stepsGoal)}</span>
+        </button>
+      </div>
+
+      <div className="group-title">Nutrición</div>
       <div className="group">
         <button className="group__row group__row--link" onClick={() => push(() => <ProfilePage />)}>
           <span className="group__icon">
@@ -240,11 +263,22 @@ export function AjustesHome() {
       </div>
       <p className="hint group-hint">Tus datos se guardan solo en este dispositivo; no hay servidor ni cuenta.</p>
       <p className="version">
-        Nutri · versión {__APP_VERSION__}
+        Físico · versión {__APP_VERSION__}
         {t ? ` · mantenimiento de referencia ${fmtK(t.tdee)} kcal` : ''}
         {p ? ` · ritmo ${fmtKg(p.ratePct)} %/sem` : ''}
       </p>
       <InstallSheet open={installOpen} onClose={() => setInstallOpen(false)} />
+      <PromptSheet
+        open={stepsOpen}
+        title="Objetivo diario de pasos"
+        inputMode="numeric"
+        initial={String(s.stepsGoal)}
+        onClose={() => setStepsOpen(false)}
+        onSubmit={(v) => {
+          const n = parseSteps(v);
+          if (n && n >= 1000) void setSetting('stepsGoal', n);
+        }}
+      />
     </Page>
   );
 }

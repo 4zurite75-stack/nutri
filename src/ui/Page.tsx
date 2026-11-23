@@ -1,6 +1,7 @@
 import { useState, type ReactNode, type UIEvent } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { pop } from '../nav/nav';
+import { ModeSwitch } from '../nav/ModeSwitch';
 
 interface PageProps {
   title: string;
@@ -22,6 +23,7 @@ export function Page({ title, large, back, onBack, right, children, className = 
     const s = y > (large ? 34 : 4);
     if (s !== scrolled) setScrolled(s);
   };
+  // En las pantallas principales el centro de la barra es el selector Gym / Nutrición.
   const showSmallTitle = !large || scrolled;
   return (
     <div className={`page ${className}`}>
@@ -35,7 +37,7 @@ export function Page({ title, large, back, onBack, right, children, className = 
               </button>
             )}
           </div>
-          <div className={`navbar__title ${showSmallTitle ? 'is-visible' : ''}`}>{title}</div>
+          {large ? <ModeSwitch /> : <div className={`navbar__title ${showSmallTitle ? 'is-visible' : ''}`}>{title}</div>}
           <div className="navbar__side navbar__side--right">{right}</div>
         </div>
         {sub && <div className="navbar__sub">{sub}</div>}

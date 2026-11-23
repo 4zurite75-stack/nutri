@@ -5,7 +5,7 @@ import { Cat } from './Cat';
 import { HealthBar } from './CatCard';
 import { updatePet, usePet } from './usePet';
 import { catSays, isNight } from './talk';
-import { GOOD_DAY, MAX, MOOD_LABEL, STAGES } from '../../lib/pet';
+import { GOOD_DAY, GYM_BONUS, MAX, MOOD_LABEL, STAGES } from '../../lib/pet';
 import { PromptSheet } from '../../ui/PromptSheet';
 import { addDays, dayLabel, fmtK, fmtKg, isoDate } from '../../lib/format';
 
@@ -127,6 +127,18 @@ export function CatPage() {
           </div>
         ))}
       </div>
+      {today.gym && (
+        <div className="group" style={{ marginTop: 8 }}>
+          <div className="group__row cat-item">
+            <span className={`cat-item__check ${today.gym === 'done' ? 'is-on' : ''}`}>{today.gym === 'done' && <Check size={14} strokeWidth={3} />}</span>
+            <span className="cat-item__text">
+              Entreno de hoy
+              <small className="muted">{today.gym === 'done' ? 'Sesión completada' : 'Día de gym: complétalo para sumarle salud'}</small>
+            </span>
+            <span className="group__value">±{GYM_BONUS} salud</span>
+          </div>
+        </div>
+      )}
       <p className="hint group-hint">
         Un día cuenta como cumplido con {GOOD_DAY} puntos o más. La puntuación de hoy se cierra a medianoche.
       </p>
@@ -154,6 +166,7 @@ export function CatPage() {
         </div>
         <div className="group__row">Los días buenos le suben la salud; los malos o sin registrar, se la bajan. Si dejas de cuidarlo, enferma y se desnutre.</div>
         <div className="group__row">Con días cumplidos crece: cachorro → joven (7) → adulto (21) → leyenda (60).</div>
+        <div className="group__row">Los días de gym del programa suman {GYM_BONUS} de salud si haces la sesión y restan {GYM_BONUS} si te la saltas.</div>
         <div className="group__row">Nunca muere: unos cuantos días buenos seguidos lo recuperan.</div>
       </div>
 

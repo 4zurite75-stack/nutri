@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import type { ReactNode } from 'react';
 
-export type Tab = 'hoy' | 'alimentos' | 'progreso' | 'ajustes';
+export type Mode = 'gym' | 'nutri';
+export type Tab = 'hoy' | 'alimentos' | 'progreso' | 'ajustes' | 'g-hoy' | 'g-programa' | 'g-historial' | 'g-progreso';
+
+export const MODE_TABS: Record<Mode, Tab[]> = {
+  gym: ['g-hoy', 'g-programa', 'g-historial', 'g-progreso', 'ajustes'],
+  nutri: ['hoy', 'alimentos', 'progreso', 'ajustes'],
+};
 
 export interface StackEntry {
   key: number;
@@ -10,8 +16,11 @@ export interface StackEntry {
 }
 
 interface NavState {
+  mode: Mode;
   tab: Tab;
+  lastTab: Record<Mode, Tab>;
   stacks: Record<Tab, StackEntry[]>;
+  setMode: (m: Mode) => void;
   setTab: (t: Tab) => void;
   push: (render: () => ReactNode) => void;
   pop: () => void;
@@ -21,9 +30,41 @@ interface NavState {
 let k = 0;
 const POP_MS = 300;
 
+function storedMode(): Mode {
+  try {
+    const m = localStorage.getItem('fisico-mode');
+    if (m === 'gym' || m === 'nutri') return m;
+  } catch {
+    /* sin almacenamiento */
+  }
+  return 'gym';
+}
+
+export function applyModeColor(m: Mode) {
+  document.documentElement.dataset.mode = m;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', '#000000');
+}
+
+const initialMode = storedMode();
+applyModeColor(initialMode);
+
 export const useNav = create<NavState>((set, get) => ({
-  tab: 'hoy',
-  stacks: { hoy: [], alimentos: [], progreso: [], ajustes: [] },
+  mode: initialMode,
+  tab: MODE_TABS[initialMode][0],
+  lastTab: { gym: 'g-hoy', nutri: 'hoy' },
+  stacks: { hoy: [], alimentos: [], progreso: [], ajustes: [], 'g-hoy': [], 'g-programa': [], 'g-historial': [], 'g-progreso': [] },
+  setMode: (m) => {
+    const { mode, tab, lastTab } = get();
+    if (m === mode) return;
+    try {
+      localStorage.setItem('fisico-mode', m);
+    } catch {
+      /* nada */
+    }
+    applyModeColor(m);
+    set({ mode: m, tab: lastTab[m], lastTab: { ...lastTab, [mode]: tab } });
+  },
   setTab: (t) => {
     if (get().tab === t) get().popToRoot(t);
     else set({ tab: t });

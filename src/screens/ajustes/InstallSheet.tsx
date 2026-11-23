@@ -26,7 +26,7 @@ export function InstallSheet({ open, onClose }: { open: boolean; onClose: () => 
           <li>
             Deja activado <b>Abrir como app web</b> y pulsa <b>Añadir</b>.
           </li>
-          <li>Abre «Nutri» desde el icono de tu pantalla de inicio: se verá a pantalla completa y funcionará sin conexión.</li>
+          <li>Abre «Físico» desde el icono de tu pantalla de inicio: se verá a pantalla completa y funcionará sin conexión.</li>
         </ol>
         <p className="hint">
           Importante: los datos de la app instalada son independientes de los de Safari. Si ya registraste algo en Safari, exporta una copia antes e impórtala en la app.

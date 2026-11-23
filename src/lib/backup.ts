@@ -2,6 +2,7 @@ import { strFromU8, strToU8, unzip, zip, type Unzipped } from 'fflate';
 import { db } from '../db/db';
 import type { CheckIn, DayLog, Entry, Food, MealTemplate, SettingRow, Supplement, WeightEntry } from '../db/types';
 import { isoDate } from './format';
+import type { GymSession } from '../gym/types';
 
 const FORMAT = 'nutri-backup';
 const FOODS_FORMAT = 'nutri-alimentos';
@@ -21,6 +22,7 @@ interface BackupJSON {
   templates: MealTemplate[];
   checkins: CheckIn[];
   settings: SettingRow[];
+  gymSessions?: GymSession[];
 }
 
 type Files = Record<string, Uint8Array | [Uint8Array, { level: 0 }]>;
@@ -52,7 +54,7 @@ function unpackFoods(list: FoodJSON[], raw: Unzipped): Food[] {
 }
 
 export async function createBackup(): Promise<File> {
-  const [foods, entries, days, weights, supplements, templates, checkins, settings] = await Promise.all([
+  const [foods, entries, days, weights, supplements, templates, checkins, settings, gymSessions] = await Promise.all([
     db.foods.toArray(),
     db.entries.toArray(),
     db.days.toArray(),
@@ -61,6 +63,7 @@ export async function createBackup(): Promise<File> {
     db.templates.toArray(),
     db.checkins.toArray(),
     db.settings.toArray(),
+    db.gymSessions.toArray(),
   ]);
   const files: Files = {};
   const json: BackupJSON = {
@@ -75,10 +78,11 @@ export async function createBackup(): Promise<File> {
     templates,
     checkins,
     settings: settings.filter((s) => !PRIVATE_SETTINGS.has(s.key)),
+    gymSessions,
   };
   files['datos.json'] = strToU8(JSON.stringify(json));
   const data = await zipAsync(files);
-  return new File([data as BlobPart], `nutri-copia-${isoDate()}.zip`, { type: 'application/zip' });
+  return new File([data as BlobPart], `fisico-copia-${isoDate()}.zip`, { type: 'application/zip' });
 }
 
 export interface BackupSummary {
@@ -89,11 +93,11 @@ export interface BackupSummary {
 export async function readBackup(file: File): Promise<BackupSummary> {
   const raw = await unzipAsync(new Uint8Array(await file.arrayBuffer()));
   const entry = raw['datos.json'];
-  if (!entry) throw new Error('El archivo no es una copia de seguridad de Nutri.');
+  if (!entry) throw new Error('El archivo no es una copia de seguridad de Físico (o Nutri).');
   const json = JSON.parse(strFromU8(entry)) as BackupJSON;
   if (json.format !== FORMAT) {
     if ((json as { format?: string }).format === FOODS_FORMAT) throw new Error('Este archivo contiene alimentos compartidos: impórtalo en «Importar alimentos».');
-    throw new Error('El archivo no es una copia de seguridad de Nutri.');
+    throw new Error('El archivo no es una copia de seguridad de Físico (o Nutri).');
   }
   if (json.version > VERSION) throw new Error('La copia es de una versión más nueva de la app. Actualízala primero.');
   return { json, raw };
@@ -101,7 +105,7 @@ export async function readBackup(file: File): Promise<BackupSummary> {
 
 export async function restoreBackup({ json, raw }: BackupSummary) {
   const apiKey = await db.settings.get('apiKey');
-  const tables = [db.foods, db.entries, db.days, db.weights, db.supplements, db.templates, db.checkins, db.settings];
+  const tables = [db.foods, db.entries, db.days, db.weights, db.supplements, db.templates, db.checkins, db.settings, db.gymSessions];
   await db.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
     await db.foods.bulkPut(unpackFoods(json.foods, raw));
@@ -112,6 +116,7 @@ export async function restoreBackup({ json, raw }: BackupSummary) {
     await db.templates.bulkPut(json.templates);
     await db.checkins.bulkPut(json.checkins);
     await db.settings.bulkPut(json.settings);
+    await db.gymSessions.bulkPut(json.gymSessions ?? []);
     if (apiKey) await db.settings.put(apiKey);
   });
 }
@@ -127,7 +132,7 @@ export async function exportFoods(): Promise<{ file: File; count: number }> {
   const foods = await packFoods(list, files);
   files['datos.json'] = strToU8(JSON.stringify({ format: FOODS_FORMAT, version: VERSION, exportedAt: Date.now(), foods }));
   const data = await zipAsync(files);
-  return { file: new File([data as BlobPart], `nutri-alimentos-${isoDate()}.zip`, { type: 'application/zip' }), count: own.length };
+  return { file: new File([data as BlobPart], `fisico-alimentos-${isoDate()}.zip`, { type: 'application/zip' }), count: own.length };
 }
 
 /** Importa alimentos compartidos: añade los nuevos y actualiza los que coinciden por id o código de barras. */
@@ -135,7 +140,7 @@ export async function importFoods(file: File): Promise<{ added: number; updated:
   const raw = await unzipAsync(new Uint8Array(await file.arrayBuffer()));
   const entry = raw['datos.json'];
   const json = entry ? JSON.parse(strFromU8(entry)) : null;
-  if (!json || json.format !== FOODS_FORMAT) throw new Error('El archivo no contiene alimentos de Nutri.');
+  if (!json || json.format !== FOODS_FORMAT) throw new Error('El archivo no contiene alimentos de Físico (o Nutri).');
   const incoming = unpackFoods(json.foods as FoodJSON[], raw);
   let added = 0;
   let updated = 0;

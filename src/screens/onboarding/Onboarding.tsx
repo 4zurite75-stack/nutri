@@ -65,10 +65,10 @@ export function Onboarding() {
             <div className="onb__logo">
               <Leaf size={44} />
             </div>
-            <h1>Nutri</h1>
+            <h1>Físico</h1>
             <p>
-              Calcula tus calorías y macros según tu objetivo, registra lo que comes escaneando el código de barras y ajusta el plan
-              con tu progreso real.
+              Tu entrenamiento y tu nutrición en una sola app: el gym te guía serie a serie y la nutrición calcula tus calorías y
+              macros y se ajusta con tu progreso real. Empezamos por tu perfil.
             </p>
             <ul className="onb__list">
               <li>Tus datos se guardan solo en este móvil.</li>

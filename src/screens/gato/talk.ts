@@ -25,6 +25,7 @@ export function catSays(v: PetView, petting: boolean, petCount: number): string 
   if (v.state.mood === 'desnutrido' || v.state.mood === 'enfermo') {
     if (hour < 12) return MOOD_TEXT[v.state.mood];
   }
+  if (v.today.gym === 'pending' && hour >= 17) return '¡Hoy toca gym! Después de entrenar me pondré más fuerte.';
   if (input.kcal === 0 && hour >= 11) return 'Tengo hambre… ¿apuntamos lo que has comido?';
   if (!input.weighed && hour < 12) return '¿Nos pesamos esta mañana?';
   if (pendingSupps.length && hour >= 9) return `No olvides: ${pendingSupps[0].toLowerCase()}.`;

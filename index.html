@@ -8,7 +8,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Nutri" />
+    <meta name="apple-mobile-web-app-title" content="Físico" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -24,7 +24,7 @@
     <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1242x2208.png" />
     <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-750x1334.png" />
     <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-640x1136.png" />
-    <title>Nutri</title>
+    <title>Físico</title>
   </head>
   <body>
     <div id="root"></div>
@@ -32,30 +32,36 @@
       <div class="launch__logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="96" height="96">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1c1f1d"/>
-      <stop offset="1" stop-color="#050605"/>
+      <stop offset="0" stop-color="#1f1d1c"/>
+      <stop offset="1" stop-color="#060606"/>
     </linearGradient>
-    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8af0a6"/>
+    <linearGradient id="or" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffa06a"/>
+      <stop offset="1" stop-color="#ff5a17"/>
+    </linearGradient>
+    <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7ef0a0"/>
       <stop offset="1" stop-color="#22b85a"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <g fill="none" stroke-width="40" stroke-linecap="round" transform="rotate(-90 256 256)">
-    <circle cx="256" cy="256" r="160" stroke="#3a86ec" stroke-dasharray="300 705" stroke-dashoffset="0"/>
-    <circle cx="256" cy="256" r="160" stroke="#c98400" stroke-dasharray="290 715" stroke-dashoffset="-345"/>
-    <circle cx="256" cy="256" r="160" stroke="#e2457a" stroke-dasharray="235 770" stroke-dashoffset="-680"/>
+  <path d="M256 96 A160 160 0 0 0 256 416" fill="none" stroke="url(#or)" stroke-width="40" stroke-linecap="round"/>
+  <path d="M256 96 A160 160 0 0 1 256 416" fill="none" stroke="url(#gr)" stroke-width="40" stroke-linecap="round" stroke-dasharray="1 0"/>
+  <g transform="rotate(-35 256 256)" fill="#f5f5f7">
+    <rect x="168" y="242" width="176" height="28" rx="10"/>
+    <rect x="146" y="196" width="34" height="120" rx="12"/>
+    <rect x="118" y="214" width="24" height="84" rx="10"/>
+    <rect x="332" y="196" width="34" height="120" rx="12"/>
+    <rect x="370" y="214" width="24" height="84" rx="10"/>
   </g>
-  <path d="M184 334C170 236 226 168 334 158c12 106-44 172-150 176z" fill="url(#leaf)"/>
-  <path d="M190 328C226 270 262 226 306 190" fill="none" stroke="#0d3b1d" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
 </svg></div>
-      <div class="launch__name">Nutri</div>
+      <div class="launch__name">Físico</div>
     </div>
     <style>
       html, body { background: #000; margin: 0; }
       #launch { position: fixed; inset: 0; z-index: 1000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; transition: opacity 0.35s ease, transform 0.35s ease; font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
       #launch.is-hidden { opacity: 0; transform: scale(1.04); pointer-events: none; }
-      .launch__logo svg { display: block; border-radius: 22px; box-shadow: 0 10px 40px rgba(48, 209, 88, 0.22); }
+      .launch__logo svg { display: block; border-radius: 22px; box-shadow: 0 10px 40px rgba(255, 107, 44, 0.22); }
       .launch__name { color: #f5f5f7; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
     </style>
     <script type="module" src="/src/main.tsx"></script>

@@ -17,9 +17,9 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'Nutri — Dieta y macros',
-        short_name: 'Nutri',
-        description: 'Calcula tus calorías y macros, registra lo que comes y ajusta tu plan con tu progreso real.',
+        name: 'Físico — Gym y nutrición',
+        short_name: 'Físico',
+        description: 'Tu programa de gimnasio guiado y tu nutrición en una sola app.',
         lang: 'es',
         dir: 'ltr',
         start_url: base,

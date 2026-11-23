@@ -374,10 +374,6 @@
   top: 0;
   left: 0;
   right: 0;
-  display: grid;
-  grid-template-columns: 44px 1fr 44px 44px;
-  align-items: center;
-  gap: 2px;
   padding: var(--safe-top) 6px 6px;
   background: rgba(10, 10, 12, 0.82);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -409,8 +405,19 @@
 .hoy__menu {
   color: var(--text-2);
 }
+.hoy__mode {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+.hoy__row {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px 44px;
+  align-items: center;
+  gap: 2px;
+}
 .hoy__scroll {
-  padding-top: calc(var(--safe-top) + 64px);
+  padding-top: calc(var(--safe-top) + 104px);
 }
 .hoy__cards {
   display: flex;
